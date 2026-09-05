@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="theme-color" content="#7b3f00">
+<title>Masala Price List</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f7f3ee;color:#2c2119}
+header{background:#7b3f00;color:white;padding:22px 18px 18px;position:sticky;top:0;z-index:5}h1{margin:0 0 14px;font-size:25px}
+.search{width:100%;padding:13px 15px;border:0;border-radius:12px;font-size:16px;outline:0}main{padding:16px;max-width:700px;margin:auto}
+.actions{display:flex;gap:10px;margin-bottom:14px}button{border:0;border-radius:11px;padding:12px 14px;font-weight:600;cursor:pointer}
+.primary{background:#7b3f00;color:white}.secondary{background:white;color:#7b3f00;border:1px solid #dbcbbd}
+.card{background:white;border-radius:16px;padding:16px;margin:12px 0;box-shadow:0 2px 10px #00000010}.name{font-size:20px;font-weight:700;margin-bottom:12px;text-transform:capitalize}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.cell{background:#f8f5f1;border-radius:10px;padding:10px}.label{font-size:12px;color:#78695e}.value{font-size:17px;font-weight:700;margin-top:3px}
+.small{font-size:13px;color:#78695e;margin:8px 0 16px}.empty{text-align:center;padding:40px 10px;color:#78695e}
+dialog{border:0;border-radius:18px;width:min(94%,520px);padding:0;box-shadow:0 10px 40px #0004}form{padding:20px}form h2{margin-top:0}.field{margin:10px 0}
+label{display:block;font-size:13px;margin-bottom:5px;color:#6e5e53}input[type=text],input[type=number]{width:100%;padding:11px;border:1px solid #d8ccc2;border-radius:10px;font-size:16px}
+.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.formbuttons{display:flex;gap:10px;margin-top:16px;justify-content:flex-end}
+@media(min-width:650px){.grid{grid-template-columns:repeat(4,1fr)}}
+</style></head><body>
+<header><h1>🌶️ Masala Price List</h1><input id="search" class="search" placeholder="Search masala..." autocomplete="off"></header>
+<main><div class="actions"><button class="primary" onclick="openAdd()">＋ Add Masala</button><button class="secondary" onclick="resetData()">Reset</button></div>
+<div class="small" id="count"></div><div id="list"></div></main>
+<dialog id="dlg"><form onsubmit="saveMasala(event)"><h2 id="dialogTitle">Add Masala</h2><input type="hidden" id="editIndex">
+<div class="field"><label>Masala name</label><input id="NAME" type="text" required></div>
+<div class="formgrid">
+<div class="field"><label>CP</label><input id="CP" type="number"></div><div class="field"><label>Price</label><input id="Price" type="number"></div>
+<div class="field"><label>50g</label><input id="g50" type="number"></div><div class="field"><label>100g</label><input id="g100" type="number"></div>
+<div class="field"><label>200g</label><input id="g200" type="number"></div><div class="field"><label>250g</label><input id="g250" type="number"></div>
+<div class="field"><label>1kg</label><input id="kg1" type="number"></div></div>
+<div class="formbuttons"><button type="button" class="secondary" onclick="dlg.close()">Cancel</button><button class="primary" type="submit">Save</button></div>
+</form></dialog>
+<script>
+const initial=[{"NAME": "Jeera", "CP": 250, "Price": 312, "50g": 15, "100g": 31, "200g": 63, "250g": 79, "1kg": 305}, {"NAME": "Dhania", "CP": 190, "Price": 237, "50g": 12, "100g": 24, "200g": 48, "250g": 50, "1kg": 232}, {"NAME": "Lal mirch", "CP": 300, "Price": 375, "50g": 18, "100g": 37, "200g": 75, "250g": 94, "1kg": 366}, {"NAME": "kaali mirch", "CP": 800, "Price": 1000, "50g": 50, "100g": 101, "200g": 202, "250g": 253, "1kg": 971}];
+const key="masala-price-list-v1";let data=JSON.parse(localStorage.getItem(key)||"null")||initial;
+const dlg=document.getElementById("dlg");
+const ids=["NAME","CP","Price","g50","g100","g200","g250","kg1"];
+function money(v){return v===""?"—":"₹"+v}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
+function save(){localStorage.setItem(key,JSON.stringify(data));render()}
+function render(){
+ const q=document.getElementById("search").value.toLowerCase().trim();
+ const m=data.map((x,i)=>[x,i]).filter(([x])=>String(x.NAME).toLowerCase().includes(q));
+ document.getElementById("count").textContent=m.length+" masala"+(m.length===1?"":"s");
+ document.getElementById("list").innerHTML=m.length?m.map(([x,i])=>`
+ <div class="card"><div class="name">${esc(x.NAME)}</div><div class="grid">
+ <div class="cell"><div class="label">CP</div><div class="value">${money(x.CP)}</div></div>
+ <div class="cell"><div class="label">Price</div><div class="value">${money(x.Price)}</div></div>
+ <div class="cell"><div class="label">50g</div><div class="value">${money(x["50g"])}</div></div>
+ <div class="cell"><div class="label">100g</div><div class="value">${money(x["100g"])}</div></div>
+ <div class="cell"><div class="label">200g</div><div class="value">${money(x["200g"])}</div></div>
+ <div class="cell"><div class="label">250g</div><div class="value">${money(x["250g"])}</div></div>
+ <div class="cell"><div class="label">1kg</div><div class="value">${money(x["1kg"])}</div></div></div>
+ <div style="margin-top:12px"><button class="secondary" onclick="openEdit(${i})">✏️ Edit</button></div></div>`).join(""):`<div class="empty">No masala found.</div>`;
+}
+function openAdd(){document.getElementById("dialogTitle").textContent="Add Masala";document.getElementById("editIndex").value="";ids.forEach(id=>document.getElementById(id).value="");dlg.showModal()}
+function openEdit(i){let x=data[i];document.getElementById("dialogTitle").textContent="Edit Masala";document.getElementById("editIndex").value=i;
+ids.forEach(id=>{let k={"g50":"50g","g100":"100g","g200":"200g","g250":"250g","kg1":"1kg"}[id]||id;document.getElementById(id).value=x[k]??""});dlg.showModal()}
+function saveMasala(e){e.preventDefault();let i=document.getElementById("editIndex").value,x={};
+ids.forEach(id=>{let k={"g50":"50g","g100":"100g","g200":"200g","g250":"250g","kg1":"1kg"}[id]||id,v=document.getElementById(id).value;x[k]=id==="NAME"?v:(v===""?"":Number(v))});
+if(i==="")data.push(x);else data[Number(i)]=x;save();dlg.close()}
+function resetData(){if(confirm("Reset to the original Excel data?")){data=JSON.parse(JSON.stringify(initial));save()}}
+document.getElementById("search").addEventListener("input",render);render();
+</script></body></html>
